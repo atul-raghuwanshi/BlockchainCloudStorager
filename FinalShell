@@ -1,0 +1,58 @@
+sudo ./bringupnetwork.sh
+pushd ../chaincode/docstore/cloudchaincode
+GO111MODULE=on go mod vendor
+popd
+sudo docker exec cli peer lifecycle chaincode package server.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode/docstore/cloudchaincode --label scc
+sudo docker exec cli peer lifecycle chaincode install server.tar.gz
+sudo docker exec -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp -e CORE_PEER_ADDRESS=peer0.org2.example.com:9051 -e CORE_PEER_LOCALMSPID="Org2MSP" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt cli peer lifecycle chaincode install server.tar.gz
+sudo docker exec -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp -e CORE_PEER_ADDRESS=peer0.org3.example.com:11051 -e CORE_PEER_LOCALMSPID="Org3MSP" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt cli peer lifecycle chaincode install server.tar.gz
+sudo docker exec cli peer lifecycle chaincode approveformyorg --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --channelID mychannel --name scc --version 1 --sequence 1 --waitForEvent --signature-policy "OR('Org1MSP.peer',OutOf (2,'Org2MSP.peer','Org3MSP.peer'))" --package-id scc:eb555f805eeecd5f63c370c66d104669560b2af649f9b555c16c6c54558ffa3c
+sudo docker exec cli peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name scc --version 1 --sequence 1 --signature-policy "OR('Org1MSP.peer',OutOf (2,'Org2MSP.peer','Org3MSP.peer'))" --output json
+sudo docker exec -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/users/Admin@org3.example.com/msp -e CORE_PEER_ADDRESS=peer0.org3.example.com:11051 -e CORE_PEER_LOCALMSPID="Org3MSP" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt cli peer lifecycle chaincode approveformyorg --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --channelID mychannel --name scc --version 1 --sequence 1 --waitForEvent --signature-policy "OR('Org1MSP.peer',OutOf (2,'Org2MSP.peer','Org3MSP.peer'))" --package-id scc:eb555f805eeecd5f63c370c66d104669560b2af649f9b555c16c6c54558ffa3c
+sudo docker exec cli peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name scc --version 1 --sequence 1 --signature-policy "OR('Org1MSP.peer',OutOf (2,'Org2MSP.peer','Org3MSP.peer'))" --output json
+sudo docker exec cli peer lifecycle chaincode commit -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --peerAddresses peer0.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses peer0.org3.example.com:11051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt --channelID mychannel --name scc --version 1 --sequence 1 --signature-policy "OR('Org1MSP.peer',OutOf (2,'Org2MSP.peer','Org3MSP.peer'))"
+sudo docker exec cli peer lifecycle chaincode querycommitted --channelID mychannel --name scc --output json
+sudo docker exec -e CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp -e CORE_PEER_ADDRESS=peer0.org2.example.com:9051 -e CORE_PEER_LOCALMSPID="Org2MSP" -e CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt cli peer lifecycle chaincode approveformyorg --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --channelID mychannel --name scc --version 1 --sequence 1 --waitForEvent --signature-policy "OR('Org1MSP.peer',OutOf (2,'Org2MSP.peer','Org3MSP.peer'))" --package-id scc:eb555f805eeecd5f63c370c66d104669560b2af649f9b555c16c6c54558ffa3c
+sudo docker exec cli peer lifecycle chaincode querycommitted --channelID mychannel --name scc --output json
+
+
+
+
+Registration:-
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc -c '{"Args":["Register", "atul"]}'
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc -c '{"Args":["Register", "john"]}'
+
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc -c '{"Args":["Register", "john"]}'
+
+
+
+Upload:-
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc -c '{"Args":["UploadDocument", "ABCDEFGfa","BpLnfgDsc2","atul","1094bb02a47a375334fffac563f69972208846b3","john"]}'
+
+VerifyUpload:-
+
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc --peerAddresses peer0.org2.example.com:9051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses peer0.org3.example.com:11051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt -c '{"Args":["VerifyUpload","5a84jjJkwzDkh9h2fhfUVuS9","BpLnfgDsc2","atul","1094bb02a47a375334fffac563f69972208846b3","john","1"]}'
+
+
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc --peerAddresses peer0.org2.example.com:9051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses peer0.org3.example.com:11051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt -c '{"Args":["ReadDocument","WD8F2qNfHK","john","1"]}'
+
+
+
+Upload 2
+
+
+
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc -c '{"Args":["UploadDocument", "AtomicHabits","WD8F2qNfHK","john","6fc63fcc0ea7e3279c56e69aa319c83f5fb1118b","atul"]}'
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc --peerAddresses peer0.org2.example.com:9051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --peerAddresses peer0.org3.example.com:11051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt -c '{"Args":["ReadDocument","BpLnfgDsc2","atul","2"]}'
+
+
+sudo docker exec cli peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n scc --peerAddresses peer0.org2.example.com:9051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt -c '{"Args":["VerifyUpload","jZ8uVbhV3vC5AWX39IVUWSP2","WD8F2qNfHK","john","6fc63fcc0ea7e3279c56e69aa319c83f5fb1118b","atul","2"]}'
+
